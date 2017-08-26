@@ -5,10 +5,12 @@ class CompleteMe
   def initialize
     @root = Node.new
     @count = 0
-    @selections = {}
+    @selections = Hash.new do |selections, new_prefix|
+      selections[new_prefix] = Hash.new(0)
+    end
   end
 
-  def insert()
+  def insert(word)
 
   end
 
@@ -26,6 +28,10 @@ class CompleteMe
          incompletes << [new_word_so_far, child]
        end
      end
+  end
+
+  def select(prefix, word)
+    @selections[prefix][word] += 1
   end
 
 end

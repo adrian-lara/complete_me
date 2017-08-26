@@ -29,31 +29,4 @@ class NodeTest < MiniTest::Test
     assert node.children.empty?
   end
 
-  def test_add_child_adds_node_to_children
-    parent = Node.new
-    parent.add_child('q')
-    assert_instance_of Node, parent.children['q']
-  end
-
-  def test_add_child_returns_created_node
-    parent = Node.new
-    assert_instance_of Node, parent.add_child('q')
-  end
-
-  def test_add_child_creates_non_end_by_default
-    parent = Node.new
-    refute parent.add_child('q').end?
-  end
-
-  def test_add_child_can_create_end_node
-    parent = Node.new
-    assert parent.add_child('q', true).end?
-  end
-
-  def test_add_child_requires_letter
-    assert_raises ArgumentError do
-      Node.new.add_child
-    end
-  end
-
 end

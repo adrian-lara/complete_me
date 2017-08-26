@@ -1,7 +1,18 @@
+require './lib/node'
 
 class CompleteMe
 
-  def suggest(prefix, @root)
+  def initialize
+    @root = Node.new
+    @count = 0
+    @selections = {}
+  end
+
+  def insert()
+
+  end
+
+  def suggest(prefix, start = @root)
     start = find(prefix) #start = whole node
     incompletes = []
     complete = []

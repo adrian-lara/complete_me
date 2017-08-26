@@ -2,6 +2,7 @@ require './lib/node'
 
 class CompleteMe
 
+  attr_reader :count
   def initialize
     @root = Node.new
     @count = 0
@@ -12,7 +13,7 @@ class CompleteMe
 
   def insert(word)
     @count += 1
-    
+
     working = @root
     word.each_char do |character|
       working.children[character] ||= Node.new

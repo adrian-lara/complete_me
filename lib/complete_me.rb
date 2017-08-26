@@ -21,8 +21,26 @@ class CompleteMe
     working.end_status = true
   end
 
-  def suggest(prefix, start = @root)
-    start = find(prefix) #start = whole node
+  def select(prefix, word)
+    @selections[prefix][word] += 1
+  end
+
+  def suggest(prefix, start)
+    unordered_suggestions = generate_suggestions
+    order_suggestions(unordered_suggestions)
+  end
+
+  def find_start_node(prefix)
+    current_node = @root
+    prefix.each_char do |character|
+      current_node = current_node.children[character]
+      return nil if current_node.nil?
+    end
+    current_node
+  end
+
+  def generate_suggestions(prefix, start_node)
+    start_node = find_start_node(prefix)
     incompletes = []
     complete = []
     incompletes << [prefix, start]
@@ -37,8 +55,13 @@ class CompleteMe
      end
   end
 
-  def select(prefix, word)
-    @selections[prefix][word] += 1
+  def order_suggestions(prefix, suggestions)
+    selections_from_prefix = @selections[prefix]
+    suggestions.sort do |a_suggestion, b_suggestion|
+      a_count = selection_counts_from_prefix[a_suggestions]
+      b_count = selection_counts_from_prefix[b_suggestions]
+      b_count <=> a_count
+    end
   end
 
 end

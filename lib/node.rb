@@ -1,6 +1,8 @@
 class Node
 
   attr_reader :children
+  attr_writer :end_status
+
   def initialize(end_status = false)
     @children = {}
     @end_status = end_status
@@ -8,10 +10,6 @@ class Node
 
   def end?
     @end_status
-  end
-
-  def add_child(letter, end_status = false)
-    children[letter] = Node.new(end_status)
   end
 
 end

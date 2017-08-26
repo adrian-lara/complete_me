@@ -11,7 +11,14 @@ class CompleteMe
   end
 
   def insert(word)
-
+    @count += 1
+    
+    working = @root
+    word.each_char do |character|
+      working.children[character] ||= Node.new
+      working = working.children[character]
+    end
+    working.end_status = true
   end
 
   def suggest(prefix, start = @root)

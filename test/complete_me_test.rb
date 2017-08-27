@@ -1,8 +1,9 @@
+require "./test/test_helper"
+
 require "minitest"
 require "minitest/emoji"
 require "minitest/autorun"
 
-require "./test/test_helper"
 require "./lib/complete_me"
 
 
@@ -61,6 +62,14 @@ class CompleteMeTest < Minitest::Test
     assert_equal ["doggerel", "doggereler", "doggerelism", "doggerelist", "doggerelize", "doggerelizer"], cm.suggest("doggerel").sort
     cm.select("doggerel", "doggerelist")
     assert_equal "doggerelist", cm.suggest("doggerel").first
+  end
+
+  def test_selects_are_prefix_specific
+    cm.populate(large_word_list)
+    cm.select("doggerel", "doggerelist")
+    cm.select("dogger", "doggereler")
+    assert_equal "doggerelist", cm.suggest("doggerel").first
+    assert_equal "doggereler", cm.suggest("dogger").first
   end
 
   def insert_words(words)

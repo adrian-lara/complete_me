@@ -1,8 +1,9 @@
+require "./test/test_helper"
+
 require "minitest"
 require "minitest/emoji"
 require "minitest/autorun"
 
-require "./test/test_helper"
 require "./lib/complete_me"
 
 

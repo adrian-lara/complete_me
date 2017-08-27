@@ -33,8 +33,8 @@ class CompleteMe
   end
 
   def suggest(prefix)
-    unordered_suggestions = generate_suggestions(prefix)
-    order_suggestions(prefix, unordered_suggestions)
+    suggestions = generate_suggestions(prefix)
+    most_selected_suggestions(prefix, suggestions)
   end
 
   def find_start_node(prefix)
@@ -48,14 +48,14 @@ class CompleteMe
 
   def generate_suggestions(prefix)
     start_node = find_start_node(prefix)
-    incompletes = []
+    return [] if start_node.nil?
+    incompletes = [ [prefix, start_node] ]
     completes = []
-    incompletes << [prefix, start_node]
     until incompletes.empty?
-       word_so_far, working = incompletes.pop
-       completes << word_so_far if working.end?
+       word_so_far, current_node = incompletes.pop
+       completes << word_so_far if current_node.end?
 
-       working.children.each_pair do |character, child|
+       current_node.children.each_pair do |character, child|
          new_word_so_far = word_so_far + character
          incompletes << [new_word_so_far, child]
        end
@@ -63,7 +63,7 @@ class CompleteMe
      completes
   end
 
-  def order_suggestions(prefix, suggestions)
+  def most_selected_suggestions(prefix, suggestions)
     selection_counts_from_prefix = @selections[prefix]
     suggestions.sort do |a_suggestion, b_suggestion|
       a_count = selection_counts_from_prefix[a_suggestion]

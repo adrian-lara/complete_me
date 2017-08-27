@@ -72,4 +72,12 @@ class CompleteMe
     end
   end
 
+  def populate_from_csv(filename)
+    require 'csv'
+    absolute_path = File.absolute_path(filename)
+    CSV.foreach(absolute_path) do |line|
+      insert(line[-1])
+    end
+  end
+
 end

@@ -11,20 +11,20 @@ class CompleteMe
     end
   end
 
-  def insert(word)
-    @count += 1
-
-    working = @root
-    word.each_char do |character|
-      working.children[character] ||= Node.new
-      working = working.children[character]
+  def insert(complete)
+    current_node = @root
+    complete.each_char do |character|
+      current_node.children[character] ||= Node.new
+      current_node = current_node.children[character]
     end
-    working.end_status = true
+    current_node.end_status = true
+
+    @count += 1
   end
 
   def populate(words)
-    words.each_line do |line|
-      insert line.chomp
+    words.each_line do |word|
+      insert word.chomp
     end
   end
 

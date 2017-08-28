@@ -3,16 +3,29 @@ require './lib/node'
 
 class CompleteMe
 
-  #root read access added for testing????
+#root read access added for testing????
   attr_reader :count, :root
 
   def initialize
     @root = Node.new
     @count = 0
-    @selections = Hash.new do |selections, new_prefix|
-      selections[new_prefix] = Hash.new(0)
+    #@selections => @selection_history
+    #selections => prefix
+    #new_prefix => word_choice
+    @selection_history = Hash.new do |selection_history, prefix|
+      selection_history[prefix] = Hash.new(0)
+    # @selections = Hash.new do |selections, new_prefix|
+    #   selections[new_prefix] = Hash.new(0)
     end
   end
+
+=begin
+  selection_history = {
+      'piz' => { 'pizzeria' => 3
+                 'pizzicato' => 1
+                }
+}
+=end
 
   def insert(word)
     @count += 1
@@ -25,15 +38,14 @@ class CompleteMe
     working.end_status = true
   end
 
-#added parenthesis for insert argument
   def populate(words)
-    words.each_line do |line|
-      insert(line.chomp)
+    words.each_line do |word|
+      insert(word.chomp)
     end
   end
 
   def select(prefix, word)
-    @selections[prefix][word] += 1
+    @selection_history[prefix][word] += 1
   end
 
   def suggest(prefix)
@@ -41,30 +53,27 @@ class CompleteMe
     order_suggestions(prefix, unordered_suggestions)
   end
 
-#find_start_node => find_node
-#current_node => current
-  def find_start_node(prefix)
-    current_node = @root
+  def find_node(prefix)
+    current = @root
     prefix.each_char do |character|
-      return nil if current_node.children.empty? #is this more readable??
-      current_node = current_node.children[character]
-      # return nil if current_node.nil?
+      current = current.children[character]
+      return nil if current.nil?
     end
-    current_node
+    current
   end
 
-#working => current
-#change to accomodate the case that prefix doesnt lead to any word
+#word_so_far =>
   def generate_suggestions(prefix)
-    start_node = find_start_node(prefix)
-    incompletes = []
-    completes = []
-    incompletes << [prefix, start_node]
-    until incompletes.empty?
-       word_so_far, working = incompletes.pop
-       completes << word_so_far if working.end?
+    start_node = find_node(prefix)
+    return [] if start_node.nil?
 
-       working.children.each_pair do |character, child|
+    incompletes = [ [prefix, start_node] ]
+    completes = []
+    until incompletes.empty?
+       word_so_far, current = incompletes.pop
+       completes << word_so_far if current.end?
+
+       current.children.each_pair do |character, child|
          new_word_so_far = word_so_far + character
          incompletes << [new_word_so_far, child]
        end
@@ -72,18 +81,17 @@ class CompleteMe
      completes
   end
 
-#selection_counts_from_prefix => prefix_usage_stats
-#use sort_by vs sort
   def order_suggestions(prefix, suggestions)
-    prefix_usage_stats = @selections[prefix]
-    suggestions.sort_by { |word| -1 * prefix_usage_stats[word] }
+    prefix_usage_stats = @selection_history[prefix]
+    suggestions.sort_by { |word| -prefix_usage_stats[word] }
+# suggestions.sort_by { |word| -1 * prefix_usage_stats[word] }
+# suggestions.sort_by { |word| descending * prefix_usage_stats[word] }
   end
 
-#added option to ignore header
-#moved require 'csv' to top
   def populate_from_csv(filename)
     absolute_path = File.absolute_path(filename)
-    CSV.foreach(absolute_path, { :headers => :first_row }) do |line|
+    options = { :headers => :first_row }
+    CSV.foreach(absolute_path, options) do |line|
       insert(line[-1])
     end
   end

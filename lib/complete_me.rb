@@ -8,7 +8,6 @@ class CompleteMe
 
   def initialize
     @root = Node.new
-    @count = 0
     #@selections => @selection_history
     #selections => prefix
     #new_prefix => word_choice
@@ -25,9 +24,8 @@ class CompleteMe
       current.children[character] ||= Node.new
       current = current.children[character]
     end
+    return false if current.end?
     current.end_status = true
-#TODO don't increase count if word already exists
-    @count += 1
   end
 
   def populate(words)

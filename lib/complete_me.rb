@@ -1,35 +1,43 @@
+require 'csv'
 require './lib/node'
 
 class CompleteMe
 
+#root read access added for testing????
   attr_reader :count, :root
+
   def initialize
     @root = Node.new
     @count = 0
-    @selections = Hash.new do |selections, new_prefix|
-      selections[new_prefix] = Hash.new(0)
+    #@selections => @selection_history
+    #selections => prefix
+    #new_prefix => word_choice
+    @selection_history = Hash.new do |selection_history, prefix|
+      selection_history[prefix] = Hash.new(0)
+    # @selections = Hash.new do |selections, new_prefix|
+    #   selections[new_prefix] = Hash.new(0)
     end
   end
 
   def insert(complete)
-    current_node = @root
+    current = @root
     complete.each_char do |character|
-      current_node.children[character] ||= Node.new
-      current_node = current_node.children[character]
+      current.children[character] ||= Node.new
+      current = current.children[character]
     end
-    current_node.end_status = true
-
+    current.end_status = true
+#TODO don't increase count if word already exists
     @count += 1
   end
 
   def populate(words)
     words.each_line do |word|
-      insert word.chomp
+      insert(word.chomp)
     end
   end
 
   def select(prefix, word)
-    @selections[prefix][word] += 1
+    @selection_history[prefix][word] += 1
   end
 
   def suggest(prefix)
@@ -37,26 +45,27 @@ class CompleteMe
     order_suggestions(prefix, unordered_suggestions)
   end
 
-  def find_start_node(prefix)
-    current_node = @root
+  def find_node(prefix)
+    current = @root
     prefix.each_char do |character|
-      current_node = current_node.children[character]
-      return nil if current_node.nil?
+      current = current.children[character]
+      return nil if current.nil?
     end
-    current_node
+    current
   end
 
+#word_so_far =>
   def generate_suggestions(prefix)
-    start_node = find_start_node(prefix)
+    start_node = find_node(prefix)
     return [] if start_node.nil?
-    incompletes = []
-    completes = []
-    incompletes << [prefix, start_node]
-    until incompletes.empty?
-       word_so_far, working = incompletes.pop
-       completes << word_so_far if working.end?
 
-       working.children.each_pair do |character, child|
+    incompletes = [ [prefix, start_node] ]
+    completes = []
+    until incompletes.empty?
+       word_so_far, current = incompletes.pop
+       completes << word_so_far if current.end?
+
+       current.children.each_pair do |character, child|
          new_word_so_far = word_so_far + character
          incompletes << [new_word_so_far, child]
        end
@@ -65,18 +74,16 @@ class CompleteMe
   end
 
   def order_suggestions(prefix, suggestions)
-    selection_counts_from_prefix = @selections[prefix]
-    suggestions.sort do |a_suggestion, b_suggestion|
-      a_count = selection_counts_from_prefix[a_suggestion]
-      b_count = selection_counts_from_prefix[b_suggestion]
-      b_count <=> a_count
-    end
+    prefix_usage_stats = @selection_history[prefix]
+    suggestions.sort_by { |word| -prefix_usage_stats[word] }
+# suggestions.sort_by { |word| -1 * prefix_usage_stats[word] }
+# suggestions.sort_by { |word| descending * prefix_usage_stats[word] }
   end
 
   def populate_from_csv(filename)
-    require 'csv'
     absolute_path = File.absolute_path(filename)
-    CSV.foreach(absolute_path) do |line|
+    options = { :headers => :first_row }
+    CSV.foreach(absolute_path, options) do |line|
       insert(line[-1])
     end
   end

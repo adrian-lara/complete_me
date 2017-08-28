@@ -85,14 +85,14 @@ class CompleteMeTest < Minitest::Test
     assert_equal ["williwaw", "wizardly"], cm.suggest("wi").sort
   end
 
-  def test_find_start_node_returns_node_of_last_character_of_given_prefix
+  def test_find_node_returns_node_of_last_character_of_given_prefix
     cm.insert('meal')
 
-    assert_equal cm.root.children['m'].children['e'], cm.find_start_node('me')
+    assert_equal cm.root.children['m'].children['e'], cm.find_node('me')
   end
 
-  def test_find_start_node_returns_nil_if_prefix_path_doesnt_exist
-    assert_nil cm.find_start_node('m')
+  def test_find_node_returns_nil_if_prefix_path_doesnt_exist
+    assert_nil cm.find_node('m')
   end
 
   def test_order_suggestions_returns_ordered_array_according_to_most_to_least_selected
@@ -113,6 +113,12 @@ class CompleteMeTest < Minitest::Test
     cm.populate_from_csv('./test/data/addresses_first_300.csv')
 
     assert_equal 300, cm.count
+  end
+
+  def test_populate_from_csv_inserts_306009_denver_addresses
+    cm.populate_from_csv('./test/data/addresses.csv')
+
+    assert_equal 306009, cm.count
   end
 
   def insert_words(words)

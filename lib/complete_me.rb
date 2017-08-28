@@ -69,8 +69,8 @@ class CompleteMe
          new_word_so_far = word_so_far + character
          incompletes << [new_word_so_far, child]
        end
-     end
-     completes
+    end
+    completes
   end
 
   def order_suggestions(prefix, suggestions)

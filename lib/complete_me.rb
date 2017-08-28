@@ -2,7 +2,7 @@ require './lib/node'
 
 class CompleteMe
 
-  attr_reader :count
+  attr_reader :count, :root
   def initialize
     @root = Node.new
     @count = 0

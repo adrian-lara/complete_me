@@ -4,7 +4,7 @@ require './lib/node'
 class CompleteMe
 
 #root read access added for testing????
-  attr_reader :count, :root
+  attr_reader :root
 
   def initialize
     @root = Node.new
@@ -73,6 +73,10 @@ class CompleteMe
     completes
   end
 
+  def count
+    generate_suggestions('').length
+  end
+
   def order_suggestions(prefix, suggestions)
     prefix_usage_stats = @selection_history[prefix]
     suggestions.sort_by { |word| -prefix_usage_stats[word] }
@@ -87,5 +91,29 @@ class CompleteMe
       insert(line[-1])
     end
   end
+
+  def delete(word)
+    current = @root
+    ancestors = []
+    word.each_char do |char|
+      ancestors.unshift([current, char])
+      current = current.children[char]
+      return false if current.nil?
+    end
+    return false unless current.end?
+    if current.children.empty?
+      ancestors.each do |(ancestor, key_to_child)|
+        break ancestor.children.delete(key_to_child) if (
+          ancestor.end? ||
+          ancestor.children.size > 1 ||
+          ancestor.equal?(@root)
+        )
+      end
+    else
+      current.end_status = false
+    end
+    return true
+  end
+
 
 end

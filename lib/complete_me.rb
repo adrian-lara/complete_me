@@ -1,8 +1,11 @@
+require 'csv'
 require './lib/node'
 
 class CompleteMe
 
-  attr_reader :count
+  #root read access added for testing????
+  attr_reader :count, :root
+
   def initialize
     @root = Node.new
     @count = 0
@@ -22,9 +25,10 @@ class CompleteMe
     working.end_status = true
   end
 
+#added parenthesis for insert argument
   def populate(words)
     words.each_line do |line|
-      insert line.chomp
+      insert(line.chomp)
     end
   end
 
@@ -37,15 +41,20 @@ class CompleteMe
     order_suggestions(prefix, unordered_suggestions)
   end
 
+#find_start_node => find_node
+#current_node => current
   def find_start_node(prefix)
     current_node = @root
     prefix.each_char do |character|
+      return nil if current_node.children.empty? #is this more readable??
       current_node = current_node.children[character]
-      return nil if current_node.nil?
+      # return nil if current_node.nil?
     end
     current_node
   end
 
+#working => current
+#change to accomodate the case that prefix doesnt lead to any word
   def generate_suggestions(prefix)
     start_node = find_start_node(prefix)
     incompletes = []
@@ -63,19 +72,18 @@ class CompleteMe
      completes
   end
 
+#selection_counts_from_prefix => prefix_usage_stats
+#use sort_by vs sort
   def order_suggestions(prefix, suggestions)
-    selection_counts_from_prefix = @selections[prefix]
-    suggestions.sort do |a_suggestion, b_suggestion|
-      a_count = selection_counts_from_prefix[a_suggestion]
-      b_count = selection_counts_from_prefix[b_suggestion]
-      b_count <=> a_count
-    end
+    prefix_usage_stats = @selections[prefix]
+    suggestions.sort_by { |word| -1 * prefix_usage_stats[word] }
   end
 
+#added option to ignore header
+#moved require 'csv' to top
   def populate_from_csv(filename)
-    require 'csv'
     absolute_path = File.absolute_path(filename)
-    CSV.foreach(absolute_path) do |line|
+    CSV.foreach(absolute_path, { :headers => :first_row }) do |line|
       insert(line[-1])
     end
   end

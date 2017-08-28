@@ -109,8 +109,8 @@ class CompleteMeTest < Minitest::Test
     assert_equal result, cm.order_suggestions("piz", piz_suggestions)
   end
 
-  def test_populate_from_csv_inserts_399_denver_addresses
-    cm.populate_from_csv('./test/addresses_first_300.csv')
+  def test_populate_from_csv_inserts_300_denver_addresses
+    cm.populate_from_csv('./test/data/addresses_first_300.csv')
 
     assert_equal 300, cm.count
   end
@@ -120,7 +120,7 @@ class CompleteMeTest < Minitest::Test
   end
 
   def medium_word_list
-    File.read("./test/medium.txt")
+    File.read("./test/data/medium.txt")
   end
 
   def large_word_list

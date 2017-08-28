@@ -62,13 +62,13 @@ class CompleteMe
     incompletes = [ [prefix, start_node] ]
     completes = []
     until incompletes.empty?
-       word_so_far, current = incompletes.pop
-       completes << word_so_far if current.end?
+      word_so_far, current = incompletes.pop
+      completes << word_so_far if current.end?
 
-       current.children.each_pair do |character, child|
-         new_word_so_far = word_so_far + character
-         incompletes << [new_word_so_far, child]
-       end
+      current.children.each_pair do |character, child|
+        new_word_so_far = word_so_far + character
+        incompletes << [new_word_so_far, child]
+      end
     end
     completes
   end

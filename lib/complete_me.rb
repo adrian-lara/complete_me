@@ -48,6 +48,7 @@ class CompleteMe
 
   def generate_suggestions(prefix)
     start_node = find_start_node(prefix)
+    return [] if start_node.nil?
     incompletes = []
     completes = []
     incompletes << [prefix, start_node]

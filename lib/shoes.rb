@@ -1,7 +1,8 @@
-require './lib/node'
+class Node < Hash
+  attr_accessor :is_end_of_word
+end
 
 class CompleteMe
-
   attr_reader :count
   def initialize
     @root = Node.new
@@ -81,4 +82,25 @@ class CompleteMe
     end
   end
 
+end
+
+Shoes.app do
+  cm = CompleteMe.new
+  cm.populate File.read("/usr/share/dict/words")
+  @input = edit_line do
+    @suggestions.clear
+    @input.text.empty? ? @chosen.show : @chosen.hide
+    top_rated = cm.suggest(@input.text).first(20)
+    top_rated.each do |word|
+      @suggestions.button word do
+        @chosen.para "#{@input.text} ---> #{word}"
+        @chosen.show
+        cm.select @input.text, word
+        @input.text = ''
+        @suggestions.clear
+      end
+    end
+  end
+  @chosen = stack
+  @suggestions = stack
 end

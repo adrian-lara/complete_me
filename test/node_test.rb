@@ -13,21 +13,24 @@ class NodeTest < MiniTest::Test
   end
 
   def test_it_is_not_an_end_by_default
-    refute Node.new.end?
+    refute Node.new.is_end_of_word
   end
 
   def test_it_can_be_an_end
-    assert Node.new(true).end?
-  end
-
-  def test_it_has_children
     node = Node.new
-    assert_instance_of Hash, node.children
+    node.is_end_of_word = true
+    assert node.is_end_of_word
   end
 
   def test_children_starts_empty
-    node = Node.new
-    assert node.children.empty?
+    assert Node.new.empty?
   end
+
+  def test_it_can_have_children
+    node = Node.new
+    node[:a] = 1
+    assert_equal 1, node[:a]
+  end
+
 
 end

@@ -1,15 +1,3 @@
-class Node
-
-  attr_reader :children
-  attr_writer :end_status
-
-  def initialize()
-    @children = {}
-    @end_status = end_status
-  end
-
-  def end?
-    @end_status
-  end
-
+class Node < Hash
+  attr_accessor :is_end_of_word
 end

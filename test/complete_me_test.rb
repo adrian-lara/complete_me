@@ -17,6 +17,7 @@ class CompleteMeTest < Minitest::Test
   def test_insert_inserts_single_word
     cm.insert('me')
     assert_equal 1, cm.count
+  end
 
   def test_starting_count
     assert_equal 0, cm.count
@@ -29,7 +30,7 @@ class CompleteMeTest < Minitest::Test
   end
 
   def test_counts_inserted_words
-    insert_words(["pizza", "aardvark", "zombies", "a", "xylophones"])
+    cm.populate("pizza\naardvark\nzombies\na\nxylophones")
     assert_equal 5, cm.count
   end
 
@@ -201,7 +202,7 @@ class CompleteMeTest < Minitest::Test
   end
 
   def test_delete_removes_end_status_of_node_with_children
-    insert_words(["A", "AAA"])
+    cm.populate("A\nAAA")
     cm.delete("A")
 
     deleted_word_node = root.children["A"]
@@ -214,7 +215,7 @@ class CompleteMeTest < Minitest::Test
   end
 
   def test_delete_removes_unnecessary_nodes_back_to_ending_ancestor
-    insert_words(["A", "AAA"])
+    cm.populate("A\nAAA")
     cm.delete("AAA")
 
     ending_ancestor = root.children["A"]
@@ -227,7 +228,7 @@ class CompleteMeTest < Minitest::Test
   end
 
   def test_delete_removes_unnecessary_nodes_back_to_branching_ancestor
-    insert_words(["AAA", "ABB"])
+    cm.populate("AAA\nABB")
     cm.delete("ABB")
 
     branching_ancestor = root.children['A']
@@ -240,7 +241,7 @@ class CompleteMeTest < Minitest::Test
   end
 
   def test_delete_removes_word_with_cousined_only_through_root
-    insert_words(["AA", "BB"])
+    cm.populate("AA\nBB")
     cm.delete("BB")
 
     remaining_cousin = root.children["A"].children["A"]
@@ -265,12 +266,12 @@ class CompleteMeTest < Minitest::Test
   end
 
   def test_delete_returns_true_if_word_was_deleted
-    insert_words(["pizza", "pardva", "pardvark", "pard", "foo"])
-    assert @cm.delete('pard')
-    assert @cm.delete('pardvark')
-    assert @cm.delete('pardva')
-    assert @cm.delete('pizza')
-    assert @cm.delete('foo')
+    cm.populate("pizza\npardva\npardvark\npard\nfoo")
+    assert cm.delete('pard')
+    assert cm.delete('pardvark')
+    assert cm.delete('pardva')
+    assert cm.delete('pizza')
+    assert cm.delete('foo')
   end
 
   def test_delete_returns_false_if_no_word_was_deleted

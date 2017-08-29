@@ -100,26 +100,40 @@ class CompleteMe
   end
 
   def delete(word)
-    current = @root
-    ancestors = []
-    word.each_char do |char|
-      ancestors.unshift([current, char])
-      current = current.children[char]
-      return false if current.nil?
-    end
-    return false unless current.end?
-    if current.children.empty?
-      ancestors.each do |(ancestor, key_to_child)|
-        break ancestor.children.delete(key_to_child) if (
-          ancestor.end? ||
-          ancestor.children.size > 1 ||
-          ancestor.equal?(@root)
-        )
-      end
+    end_node = find_node(word)
+    return false unless end_node.is_a?(Node) && end_node.end?
+
+    if end_node.children.empty?
+      steps_back = steps_back_from_end(word)
+      delete_unnecessary_nodes(steps_back)
     else
-      current.end_status = false
+      end_node.end_status = false
     end
-    return true
+
+    true
+  end
+
+  def steps_back_from_end(word)
+    current = @root
+    steps = []
+    word.each_char do |key_from_current|
+      steps.unshift([current, key_from_current])
+      current = current.children[key_from_current]
+    end
+    steps
+  end
+
+  def delete_unnecessary_nodes(steps_back)
+    steps_back.each do |(ancestor, key_to_child)|
+      if (
+        ancestor.end? ||
+        ancestor.children.size > 1 ||
+        ancestor.equal?(@root)
+      )
+        ancestor.children.delete(key_to_child)
+        break
+      end
+    end
   end
 
 

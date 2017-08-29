@@ -193,6 +193,13 @@ class CompleteMeTest < Minitest::Test
     cm.populate_from_csv('./test/data/addresses.csv')
   end
 
+  def test_delete_removes_only_word
+    cm.insert("AA")
+    cm.delete("AA")
+
+    assert_nil root.children["A"]
+  end
+
   def test_delete_removes_end_status_of_node_with_children
     insert_words(["A", "AAA"])
     cm.delete("A")
@@ -219,7 +226,7 @@ class CompleteMeTest < Minitest::Test
     assert_equal 1, cm.count
   end
 
-  def test_delete_removes_unnecessary_nodes_back_to_branching_node
+  def test_delete_removes_unnecessary_nodes_back_to_branching_ancestor
     insert_words(["AAA", "ABB"])
     cm.delete("ABB")
 
@@ -232,7 +239,7 @@ class CompleteMeTest < Minitest::Test
     assert_equal 1, cm.count
   end
 
-  def test_delete_removes_word_cousined_only_by_root
+  def test_delete_removes_word_with_cousined_only_through_root
     insert_words(["AA", "BB"])
     cm.delete("BB")
 
@@ -242,15 +249,6 @@ class CompleteMeTest < Minitest::Test
     assert_instance_of Node, remaining_cousin
 
     assert_equal 1, cm.count
-  end
-
-  def test_delete_removes_last_word
-    cm.insert("AA")
-    cm.delete("AA")
-
-    assert_nil root.children["A"]
-
-    assert_equal 0, cm.count
   end
 
   def test_delete_does_nothing_if_word_is_not_present

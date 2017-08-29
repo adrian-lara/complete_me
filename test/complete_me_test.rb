@@ -18,6 +18,12 @@ class CompleteMeTest < Minitest::Test
     assert_equal 0, cm.count
   end
 
+  def test_insert_wont_insert_empty_string
+    refute cm.insert('')
+    refute root.end?
+    assert_equal 0, cm.count
+  end
+
   def test_counts_inserted_words
     insert_words(["pizza", "aardvark", "zombies", "a", "xylophones"])
     assert_equal 5, cm.count

@@ -19,6 +19,7 @@ class CompleteMe
   end
 
   def insert(complete)
+    return false if complete == ''
     current = @root
     complete.each_char do |character|
       current.children[character] ||= Node.new

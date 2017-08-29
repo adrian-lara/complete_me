@@ -72,7 +72,15 @@ class CompleteMe
   end
 
   def count
-    generate_suggestions('').length
+    words_using_node(@root)
+  end
+
+  def words_using_node(node)
+    count = node.end? ? 1 : 0
+    node.children.each_value do |child|
+      count += words_using_node(child)
+    end
+    count
   end
 
   def order_suggestions(prefix, suggestions)

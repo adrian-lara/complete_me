@@ -27,7 +27,6 @@ class CompleteMe
     words_using_node(@root)
   end
 
-#TODO####no test for this method
   def words_using_node(node)
     count = node.end? ? 1 : 0
     node.children.each_value do |child|
@@ -52,21 +51,23 @@ class CompleteMe
   end
 
   def generate_suggestions(initial_prefix)
-    start_node = find_node(initial_prefix)
-    return [] if start_node.nil?
+    initial_node = find_node(initial_prefix)
+    return [] if initial_node.nil?
 
-    incompletes = [ [initial_prefix, start_node] ]
-    completes = []
-    until incompletes.empty?
-      prefix, current = incompletes.pop
-      completes << prefix if current.end?
+    unchecked_branches = [ [initial_prefix, initial_node] ]
+    complete_words = []
 
-      current.children.each_pair do |character, child|
-        new_prefix = prefix + character
-        incompletes << [new_prefix, child]
+    until unchecked_branches.empty?
+      current_prefix, current_node = unchecked_branches.pop
+      complete_words << current_prefix if current_node.end?
+
+      current_node.children.each_pair do |character, next_node|
+        next_prefix = current_prefix + character
+        unchecked_branches << [next_prefix, next_node]
       end
     end
-    completes
+
+    complete_words
   end
 
   def find_node(prefix)

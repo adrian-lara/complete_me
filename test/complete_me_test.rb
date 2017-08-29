@@ -14,11 +14,10 @@ class CompleteMeTest < Minitest::Test
     @root = cm.root
   end
 
-<<<<<<< HEAD
   def test_insert_inserts_single_word
     cm.insert('me')
     assert_equal 1, cm.count
-=======
+
   def test_starting_count
     assert_equal 0, cm.count
   end
@@ -32,7 +31,6 @@ class CompleteMeTest < Minitest::Test
   def test_counts_inserted_words
     insert_words(["pizza", "aardvark", "zombies", "a", "xylophones"])
     assert_equal 5, cm.count
->>>>>>> 99dad6d61bdff34df538f97f42ffb5b8cf97d88b
   end
 
   def test_insert_creates_a_node_for_each_letter_of_a_word

@@ -13,13 +13,9 @@ class CompleteMeTest < Minitest::Test
     @cm = CompleteMe.new
   end
 
-  def test_starting_count
-    assert_equal 0, cm.count
-  end
-
-  def test_counts_inserted_words
-    insert_words(["pizza", "aardvark", "zombies", "a", "xylophones"])
-    assert_equal 5, cm.count
+  def test_insert_inserts_single_word
+    cm.insert('me')
+    assert_equal 1, cm.count
   end
 
   def test_insert_creates_a_node_for_each_letter_of_a_word
@@ -29,70 +25,132 @@ class CompleteMeTest < Minitest::Test
     assert_instance_of Node, cm.root.children['m'].children['e']
   end
 
-  def test_insert_indicates_an_end_of_a_word_at_a_words_last_letter_node
+  def test_insert_indicates_an_end_of_a_word_at_the_node_containing_the_last_char_as_a_key
     cm.insert('me')
 
     assert true, cm.root.children['m'].end?
   end
 
-  def test_insert_inserts_single_word
-    cm.insert("pizza")
+  def test_count_starts_at_zero
+    assert_equal 0, cm.count
+  end
+
+  def test_count_returns_number_of_words_in_library_of_words_on_separate_branches
+    cm.insert('me')
+    cm.insert('hi')
+
+    assert_equal 2, cm.count
+  end
+
+  def test_count_returns_number_of_words_in_library_of_word_sharing_branches
+    cm.insert('me')
+    cm.insert('meme')
+    cm.insert('memes')
+
+    assert_equal 3, cm.count
+  end
+
+  def test_count_doesnt_double_count_a_word_that_was_inserted_twice
+    cm.insert('me')
+    cm.insert('me')
+
     assert_equal 1, cm.count
   end
 
-  def test_populate_inserts_multiple_words
+  def test_populate_inserts_each_word_on_a_line_within_a_list
     cm.populate("pizza\ndog\ncat")
     assert_equal 3, cm.count
   end
 
-  def test_populate_inserts_medium_dataset
-    cm.populate(medium_word_list)
-    assert_equal medium_word_list.split("\n").count, cm.count
+  def test_suggest_returns_an_array_of_a_single_word_given_a_prefix_of_that_word
+    cm.insert('pizza')
+    result = ['pizza']
+
+    assert_equal result, cm.suggest("piz")
   end
 
-  def test_populate_works_with_large_dataset
-    cm.populate(large_word_list)
-    assert_equal ["doggerel", "doggereler", "doggerelism", "doggerelist", "doggerelize", "doggerelizer"], cm.suggest("doggerel").sort
-    cm.select("doggerel", "doggerelist")
-    assert_equal "doggerelist", cm.suggest("doggerel").first
+  def test_suggest_returns_an_array_of_words_that_begin_with_given_prefix
+    cm.insert('me')
+    cm.insert('meme')
+    cm.insert('pizza')
+    cm.insert('pizzeria')
+    cm.insert('pizzicato')
+    result = ['pizzicato', 'pizzeria', 'pizza']
+
+    assert_equal result, cm.suggest("piz")
   end
 
-  def test_selects_off_of_medium_dataset
-    cm.populate(medium_word_list)
-    cm.select("wi", "wizardly")
-    assert_equal ["wizardly", "williwaw"], cm.suggest("wi")
+  def test_suggest_returns_all_words_if_prefix_is_empty_string
+    cm.insert('me')
+    cm.insert('meme')
+    cm.insert('pizza')
+    cm.insert('pizzeria')
+    cm.insert('pizzicato')
+    result = ['pizzicato', 'pizzeria', 'pizza', 'me', 'meme']
+
+    assert_equal result, cm.suggest("")
   end
 
-  def test_selects_are_prefix_specific
-    cm.populate(large_word_list)
-    cm.select("doggerel", "doggerelist")
-    cm.select("dogger", "doggereler")
-    assert_equal "doggerelist", cm.suggest("doggerel").first
-    assert_equal "doggereler", cm.suggest("dogger").first
+  def test_select_can_save_a_selection_from_a_prefix
+    cm.select('pi','pizza')
+
+    assert ['pizza'], cm.suggest('pi')
   end
 
-  def test_suggests_off_of_small_dataset
-    insert_words(["pizza", "aardvark", "zombies", "a", "xylophones"])
-    assert_equal ["pizza"], cm.suggest("p")
-    assert_equal ["pizza"], cm.suggest("piz")
-    assert_equal ["zombies"], cm.suggest("zo")
-    assert_equal ["a", "aardvark"], cm.suggest("a").sort
-    assert_equal ["aardvark"], cm.suggest("aa")
+  def test_select_can_save_multiple_selections_from_a_single_prefix
+    cm.select('pi','pizza')
+    cm.select('pi','pizzle')
+
+    assert ['pizza', 'pizzle'], cm.suggest('pi')
   end
 
-  def test_suggests_off_of_medium_dataset
-    cm.populate(medium_word_list)
-    assert_equal ["williwaw", "wizardly"], cm.suggest("wi").sort
+  def test_select_saves_suggestions_only_according_specific_prefixes
+    cm.select('pi','pizza')
+    cm.select('pizz','pizzle')
+
+    assert ['pizza'], cm.suggest('pi')
+    assert ['pizzle'], cm.suggest('pizz')
   end
 
-  def test_find_node_returns_node_of_last_character_of_given_prefix
+  def test_suggest_returns_ordered_array_according_to_most_to_least_selected
+    cm.insert('pizza')
+    cm.insert('pizzeria')
+    cm.insert('pizzicato')
+    cm.select("piz", "pizzeria")
+    cm.select("piz", "pizzeria")
+    cm.select("piz", "pizzeria")
+    cm.select("piz", "pizzicato")
+    result = ['pizzeria', 'pizzicato', 'pizza']
+
+    assert_equal result, cm.suggest("piz")
+  end
+
+  def test_find_node_returns_node_of_accessed_by_last_character_of_given_prefix
     cm.insert('meal')
 
     assert_equal cm.root.children['m'].children['e'], cm.find_node('me')
   end
 
   def test_find_node_returns_nil_if_prefix_path_doesnt_exist
+    cm.insert('pizza')
+    cm.insert('pizzeria')
+
     assert_nil cm.find_node('m')
+  end
+
+  def test_generate_suggestions_returns_empty_array_if_no_words_in_library_begin_with_prefix
+    cm.insert('pizza')
+    cm.insert('pizzeria')
+
+    assert [], cm.generate_suggestions('m')
+  end
+
+  def test_generate_suggestions_returns_an_array_of_words_in_the_library_beginning_with_a_given_prefix
+    cm.insert('pizza')
+    cm.insert('pizzle')
+    cm.insert('pine')
+
+    assert ['pizza', 'pizzle', 'pine'], cm.generate_suggestions('pi')
   end
 
   def test_order_suggestions_returns_ordered_array_according_to_most_to_least_selected
@@ -103,33 +161,21 @@ class CompleteMeTest < Minitest::Test
     cm.select("piz", "pizzeria")
     cm.select("piz", "pizzeria")
     cm.select("piz", "pizzicato")
-    piz_suggestions = cm.generate_suggestions("piz")
+    piz_suggestions = ['pizza', 'pizzeria', 'pizzicato']
     result = ['pizzeria', 'pizzicato', 'pizza']
 
     assert_equal result, cm.order_suggestions("piz", piz_suggestions)
   end
 
-  def test_populate_from_csv_inserts_300_denver_addresses
+  def test_populate_from_csv_inserts_300_unique_denver_addresses
     cm.populate_from_csv('./test/data/addresses_first_300.csv')
 
     assert_equal 300, cm.count
   end
 
-  def test_populate_from_csv_inserts_306009_denver_addresses
+  def test_populate_from_csv_can_handle_306009_denver_addresses
+    skip
     cm.populate_from_csv('./test/data/addresses.csv')
-
-    assert_equal 306009, cm.count
   end
 
-  def insert_words(words)
-    cm.populate(words.join("\n"))
-  end
-
-  def medium_word_list
-    File.read("./test/data/medium.txt")
-  end
-
-  def large_word_list
-    File.read("/usr/share/dict/words")
-  end
 end

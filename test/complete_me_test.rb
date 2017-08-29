@@ -115,10 +115,13 @@ class CompleteMeTest < Minitest::Test
     assert_equal 300, cm.count
   end
 
-  def test_populate_from_csv_inserts_306009_denver_addresses
+  def test_integration_handles_full_address
+    skip
+    #Just do everything?
     cm.populate_from_csv('./test/data/addresses.csv')
-
-    assert_equal 306009, cm.count
+    cm.populate(medium_word_list)
+    cm.populate(large_word_list)
+    assert false
   end
 
   def insert_words(words)
@@ -132,4 +135,5 @@ class CompleteMeTest < Minitest::Test
   def large_word_list
     File.read("/usr/share/dict/words")
   end
+
 end

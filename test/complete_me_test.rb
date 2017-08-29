@@ -14,13 +14,13 @@ class CompleteMeTest < Minitest::Test
     @root = cm.root
   end
 
+  def test_count_is_zero_for_empty_trie
+    assert_equal 0, cm.count
+  end
+
   def test_insert_inserts_single_word
     cm.insert('me')
     assert_equal 1, cm.count
-  end
-
-  def test_starting_count
-    assert_equal 0, cm.count
   end
 
   def test_insert_wont_insert_empty_string
@@ -36,19 +36,19 @@ class CompleteMeTest < Minitest::Test
 
   def test_insert_creates_a_node_for_each_letter_of_a_word
     cm.insert('me')
-
     assert_instance_of Node, root.children['m']
     assert_instance_of Node, root.children['m'].children['e']
   end
 
-  def test_insert_indicates_an_end_of_a_word_at_the_node_containing_the_last_char_as_a_key
-    cm.insert('me')
-
-    assert true, root.children['m'].end?
+  def test_insert_works_with_other_characters
+    crazy_word = "aAzZ19 \t\n!@{$%^#&*()}#|~`"
+    cm.insert(crazy_word)
+    assert_equal [ crazy_word ], cm.suggest('')
   end
 
-  def test_count_starts_at_zero
-    assert_equal 0, cm.count
+  def test_insert_marks_last_node_of_word_as_end
+    cm.insert('me')
+    assert root.children['m'].children['e'].end?
   end
 
   def test_count_returns_number_of_words_in_library_of_words_on_separate_branches
@@ -66,16 +66,25 @@ class CompleteMeTest < Minitest::Test
     assert_equal 3, cm.count
   end
 
-  def test_count_doesnt_double_count_a_word_that_was_inserted_twice
+  def test_count_doesnt_double_count_a_word_inserted_twice
     cm.insert('me')
     cm.insert('me')
 
     assert_equal 1, cm.count
   end
 
+  def test_insert_is_case_sensitive
+    cm.insert 'A'
+    cm.insert 'a'
+
+    assert_equal 2, cm.count
+    refute root.children['A'].equal?(root.children['a'])
+  end
+
   def test_populate_inserts_each_word_on_a_line_within_a_list
-    cm.populate("pizza\ndog\ncat")
+    cm.populate("pizza\ndog\nit")
     assert_equal 3, cm.count
+    assert_instance_of Node, root.children['i'].children['t']
   end
 
   def test_suggest_returns_an_array_of_a_single_word_given_a_prefix_of_that_word
@@ -158,7 +167,7 @@ class CompleteMeTest < Minitest::Test
     cm.insert('pizza')
     cm.insert('pizzeria')
 
-    assert [], cm.generate_suggestions('m')
+    assert_equal [], cm.generate_suggestions('m')
   end
 
   def test_generate_suggestions_returns_an_array_of_words_in_the_library_beginning_with_a_given_prefix
@@ -201,7 +210,7 @@ class CompleteMeTest < Minitest::Test
     assert_nil root.children["A"]
   end
 
-  def test_delete_removes_end_status_of_node_with_children
+  def test_delete_removes_end_status_of_intermediate_node
     cm.populate("A\nAAA")
     cm.delete("A")
 
@@ -214,7 +223,7 @@ class CompleteMeTest < Minitest::Test
     assert_equal 1, cm.count
   end
 
-  def test_delete_removes_unnecessary_nodes_back_to_ending_ancestor
+  def test_delete_removes_leaf_node_ancestors_back_to_ending_node
     cm.populate("A\nAAA")
     cm.delete("AAA")
 
@@ -227,9 +236,9 @@ class CompleteMeTest < Minitest::Test
     assert_equal 1, cm.count
   end
 
-  def test_delete_removes_unnecessary_nodes_back_to_branching_ancestor
-    cm.populate("AAA\nABB")
-    cm.delete("ABB")
+  def test_delete_removes_leaf_node_ancestors_back_to_branching_node
+    cm.populate("AAA\nAbb")
+    cm.delete("Abb")
 
     branching_ancestor = root.children['A']
     remaining_cousin = branching_ancestor.children['A'].children['A']
@@ -240,7 +249,7 @@ class CompleteMeTest < Minitest::Test
     assert_equal 1, cm.count
   end
 
-  def test_delete_removes_word_with_cousined_only_through_root
+  def test_delete_removes_word_cousined_only_through_root
     cm.populate("AA\nBB")
     cm.delete("BB")
 

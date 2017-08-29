@@ -53,23 +53,23 @@ class CompleteMe
   end
 
 #word_so_far =>
-  def generate_suggestions(prefix)
-    start_node = find_node(prefix)
-    return [] if start_node.nil?
+def generate_suggestions(initial_prefix)
+  start_node = find_node(initial_prefix)
+  return [] if start_node.nil?
 
-    incompletes = [ [prefix, start_node] ]
-    completes = []
-    until incompletes.empty?
-      word_so_far, current = incompletes.pop
-      completes << word_so_far if current.end?
+  incompletes = [ [initial_prefix, start_node] ]
+  completes = []
+  until incompletes.empty?
+    substring, node = incompletes.pop
+    completes << substring if node.end?
 
-      current.children.each_pair do |character, child|
-        new_word_so_far = word_so_far + character
-        incompletes << [new_word_so_far, child]
-      end
+    node.children.each do |character, child_node|
+      child_substring = substring + character
+      incompletes << [child_substring, child_node]
     end
-    completes
   end
+  completes
+end
 
   def count
     words_using_node(@root)

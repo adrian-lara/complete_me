@@ -298,6 +298,8 @@ class CompleteMeTest < Minitest::Test
 
 
   def test_all_features_with_large_dataset
+    long_running_test!
+
     dictionary = File.read("/usr/share/dict/words")
     cm.populate(dictionary)
     cm.select('me','meet')
@@ -319,6 +321,8 @@ class CompleteMeTest < Minitest::Test
   end
 
   def test_all_features_with_very_large_data_set
+    long_running_test!
+
     cm.populate_from_csv('./test/data/addresses.csv')
     cm.populate(File.read('./test/data/medium.txt'))
     cm.populate(File.read('/usr/share/dict/words'))
@@ -335,5 +339,9 @@ class CompleteMeTest < Minitest::Test
     assert cm.suggest('2525 W').include? '2525 Wewatta Way Unit 165'
 
     assert_equal cm.count, cm.suggest('').length
+  end
+
+  def long_running_test!
+    skip unless ENV['run_long_tests'] == 'true'
   end
 end

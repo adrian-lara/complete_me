@@ -81,13 +81,13 @@ class CompleteMeTest < Minitest::Test
     assert_equal 1, cm.count
   end
 
-  def test_words_using_node_returns_the_number_of_words_within_a_particular_node
+  def test_words_using_returns_the_number_of_words_within_a_particular_node
     cm.insert('me')
     cm.insert('meme')
     cm.insert('memes')
     mem_node = cm.root.children['m'].children['e'].children['m']
 
-    assert_equal 2, cm.words_using_node(mem_node)
+    assert_equal 2, cm.words_using(mem_node)
   end
 
   def test_populate_inserts_each_word_on_a_line_within_a_list

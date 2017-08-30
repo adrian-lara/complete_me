@@ -24,13 +24,13 @@ class CompleteMe
   end
 
   def count
-    words_using_node(@root)
+    words_using(@root)
   end
 
-  def words_using_node(node)
-    count = node.end? ? 1 : 0
+  def words_using(node)
+    count = if node.end? then 1 else 0 end
     node.children.each_value do |child|
-      count += words_using_node(child)
+      count += words_using(child)
     end
     count
   end

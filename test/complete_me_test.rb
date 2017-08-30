@@ -292,4 +292,52 @@ class CompleteMeTest < Minitest::Test
     refute cm.delete('')
   end
 
+  def test_integration_with_very_large_data_set
+    #this takes about a minute on Alice
+    skip
+
+    cm.populate_from_csv('./test/data/addresses.csv')
+    cm.populate(File.read('./test/data/medium.txt'))
+    cm.populate(File.read('/usr/share/dict/words'))
+
+    assert cm.suggest('2525 W').include? '2525 Wewatta Way Unit 165'
+
+    cm.select('2525 W', '2525 Wewatta Way Unit 165')
+    assert_equal '2525 Wewatta Way Unit 165', cm.suggest('2525 W').first
+
+    cm.delete('2525 Wewatta Way Unit 165')
+    refute cm.suggest('2525 W').include? '2525 Wewatta Way Unit 165'
+
+    cm.insert('2525 Wewatta Way Unit 165')
+    assert cm.suggest('2525 W').include? '2525 Wewatta Way Unit 165'
+
+    assert_equal cm.count, cm.suggest('').length
+  end
+
+
+  #   assert cm.insert('Sharks of the Lost Ark')
+  #   assert cm.insert('Shark Park After Dark')
+  #   assert cm.insert('Shark vs Sharknado')
+  #
+  #   sorted_expected = ['Shark Park After Dark', 'Shark vs Sharknado', 'Sharks of the Lost Ark']
+  #   assert_equal sorted_expected, cm.suggest('Shark').sort
+  #
+  #   cm.select('S', 'Shark Park After Dark')
+  #   cm.select('S', 'Shark Park After Dark')
+  #   cm.select('S', ' Sharks of the Lost Ark')
+  #
+  #   cm.select('Shark', 'Sharks of the Lost Ark')
+  #   cm.select('Shark', 'Shark vs Sharknado')
+  #   cm.select('Shark', 'Shark vs Sharknado')
+  #
+  #   expected_for_S = ['Shark Park After Dark', 'Sharks of the Lost Ark', 'Shark vs Sharknado']
+  #   expected_for_Shark = ['Shark vs Sharknado', 'Sharks of the Lost Ark', 'Shark Park After Dark']
+  #   assert_equal expected_for_Shark, cm.suggest('Shark')
+  #
+  #
+  #   assert_equal expected_for_S, cm.suggest('S')
+  #   assert_equal expected_for_Shark cm.suggest('Shark')
+  #
+  # end
+
 end

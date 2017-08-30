@@ -14,10 +14,6 @@ class CompleteMeTest < Minitest::Test
     @root = cm.root
   end
 
-  def test_count_is_zero_for_empty_trie
-    assert_equal 0, cm.count
-  end
-
   def test_insert_inserts_single_word
     cm.insert('me')
     assert_equal 1, cm.count
@@ -27,11 +23,6 @@ class CompleteMeTest < Minitest::Test
     refute cm.insert('')
     refute root.end?
     assert_equal 0, cm.count
-  end
-
-  def test_counts_inserted_words
-    cm.populate("pizza\naardvark\nzombies\na\nxylophones")
-    assert_equal 5, cm.count
   end
 
   def test_insert_creates_a_node_for_each_letter_of_a_word
@@ -49,6 +40,23 @@ class CompleteMeTest < Minitest::Test
   def test_insert_marks_last_node_of_word_as_end
     cm.insert('me')
     assert root.children['m'].children['e'].end?
+  end
+
+  def test_insert_is_case_sensitive
+    cm.insert 'A'
+    cm.insert 'a'
+
+    assert_equal 2, cm.count
+    refute root.children['A'].equal?(root.children['a'])
+  end
+
+  def test_count_is_zero_for_empty_trie
+    assert_equal 0, cm.count
+  end
+
+  def test_counts_inserted_words
+    cm.populate("pizza\naardvark\nzombies\na\nxylophones")
+    assert_equal 5, cm.count
   end
 
   def test_count_returns_number_of_words_in_library_of_words_on_separate_branches
@@ -73,12 +81,13 @@ class CompleteMeTest < Minitest::Test
     assert_equal 1, cm.count
   end
 
-  def test_insert_is_case_sensitive
-    cm.insert 'A'
-    cm.insert 'a'
+  def test_words_using_node_returns_the_number_of_words_within_a_particular_node
+    cm.insert('me')
+    cm.insert('meme')
+    cm.insert('memes')
+    mem_node = cm.root.children['m'].children['e'].children['m']
 
-    assert_equal 2, cm.count
-    refute root.children['A'].equal?(root.children['a'])
+    assert_equal 2, cm.words_using_node(mem_node)
   end
 
   def test_populate_inserts_each_word_on_a_line_within_a_list
@@ -198,8 +207,7 @@ class CompleteMeTest < Minitest::Test
     assert_equal 300, cm.count
   end
 
-  def test_populate_from_csv_can_handle_306009_denver_addresses
-    skip
+  def test_populate_from_csv_can_handle_306009_lines_of_denver_addresses
     cm.populate_from_csv('./test/data/addresses.csv')
   end
 
@@ -291,5 +299,27 @@ class CompleteMeTest < Minitest::Test
     refute cm.delete('B')
     refute cm.delete('')
   end
+
+  def test_methods_function_with_large_dataset
+    dictionary = File.read("/usr/share/dict/words")
+    cm.populate(dictionary)
+    cm.select('me','meet')
+    cm.select('me','meet')
+    cm.select('me','meet')
+    cm.select('me','meet')
+    cm.select('me','meant')
+    cm.select('me','me')
+    cm.select('me','me')
+
+    assert_equal ['meet', 'me', 'meant'], cm.suggest('me')[0..2]
+
+    total = cm.count
+    cm.delete('me')
+    new_total = cm.count
+
+    assert_equal total - 1, new_total
+    assert_equal ['meet', 'meant'], cm.suggest('me')[0..1]
+  end
+
 
 end
